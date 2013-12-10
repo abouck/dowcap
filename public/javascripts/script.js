@@ -12,9 +12,10 @@ $(function() {
       $('#stocks').empty();
         for (var key in data) {
             var val = data[key];
-              $('#stocks').append("<tr><td>" + key + "</td></tr>")
-              $('#stocks').append("<tr><td>" + data[key]+ "</td></tr>")    
-        } 
+              $('#stocks').append("<tr><td class='symbol'>" + key + "</td></tr>")
+              $('#stocks').append("<tr><td class='price'>" + data[key]+ "</td></tr>")    
+        }
+        $('.price').fadeOut(100).fadeIn(100) 
         $('#last-update').text(new Date().toTimeString());
     });
 })

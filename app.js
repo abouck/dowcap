@@ -8,7 +8,8 @@ var routes = require('./routes');
 var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
-var phantom = require('node-phantom');
+// var phantom = require('node-phantom');
+var phantom = require('phantom');
 var server = require('http').createServer(app)
 
 var app = express();
@@ -43,32 +44,55 @@ io.sockets.on('connection', function (socket) {
     socket.emit('news', { message: 'welcome to the chat' });
 });
 // Get some stocks
-phantom.create(function(err,ph) {
-  return ph.createPage(function(err,page) {
-    return page.open("http://www.marketwatch.com/investing/index/djia", function(err,status) {
-       console.log("opened site? ", status);
-      page.injectJs('http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js', function(err) {
-       
-        setInterval(function() {
-          return page.evaluate(function() {
-           
-            var stocksArr = [],
-            stocksObj = {};
-            $('#indexComponents .quotelist-symb a').each(function() {
+phantom.create(function(ph) {
+  ph.createPage(function(page) {
 
-              stocksObj[$(this).text()] = $(this).parent().next().text();
-            });
-
-            return stocksObj
-          }, function(err,result) {
+    page.open("https://accounts.google.com/Login", function(status) {
+      page.onConsoleMessage = function (msg){
+      console.log(msg);
+      };
+      console.log("opened site?", status);
+        page.evaluate(function() {
+         console.log('login started')
+         console.log(document.getElementById('gaia_loginform'))
+          document.getElementById('Email').value = ''
+          console.log(document.getElementById('Email').value)
+          document.getElementById('Passwd').value = ''
+          console.log(document.getElementById('Passwd').value)
+          document.getElementById('gaia_loginform').submit()
+          console.log('submitting...')
+          return document.getElementById('Email').value;
+        }, function(result) {
             console.log(result);
-            //Send to all the clients
-           io.sockets.emit('data', result);
-          //    ph.exit();
-          });
-        }, 10000);
-      });
+            });  
+      
     });
+
+    setTimeout(function(){
+      console.log("fetching index")
+      page.open("https://www.google.com/finance/portfolio?action=view&pid=1&ei=E1WnUpjZM6WYiQKD2QE", function(status) {
+        console.log("opened site?", status); 
+          setInterval(function() {
+            // page.render('googfinance.png')
+            page.evaluate(function() {
+
+              var stocksObj = {};
+              var nodeList = document.querySelectorAll(".gf-table tbody tr .pf-table-s"),
+              nodeArray = [].slice.call(nodeList);
+               nodeArray.forEach(function(x){
+                 stocksObj[x.innerText] = x.nextSibling.innerText
+               })
+
+              return stocksObj
+            }, function(result) {
+              console.log(result);
+              //Send to all the clients
+              io.sockets.emit('data', result);
+             //   ph.exit();
+            });
+          }, 10000);
+        });
+    }, 5000);
   });
 });
 
