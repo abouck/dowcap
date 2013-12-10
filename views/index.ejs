@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src='http://code.jquery.com/jquery-1.9.1.min.js'></script>
+    <script src="/javascripts/socket.io.min.js"></script>
+    <script src="/javascripts/script.js"></script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <p id="last-update"></p>
+    <table id="stocks">
+      <tr>
+         <th>
+          Symbol
+        </th>
+        <th>
+          Price
+        </th>
+      </tr>
+    </table>
+  </body>
+</html>
